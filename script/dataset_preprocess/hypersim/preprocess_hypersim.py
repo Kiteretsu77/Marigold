@@ -22,8 +22,8 @@ if "__main__" == __name__:
         type=str,
         default="data/Hypersim/metadata_images_split_scene_v1.csv",
     )
-    parser.add_argument("--dataset_dir", type=str, default="data/Hypersim/raw_data")
-    parser.add_argument("--output_dir", type=str, default="data/Hypersim/processed")
+    parser.add_argument("--dataset_dir", type=str, default="/nfs/turbo/jjparkcv-turbo-large/boyangwa/hypersim_datasets")
+    parser.add_argument("--output_dir", type=str, default="/nfs/turbo/jjparkcv-turbo-large/boyangwa/hypersim_datasets_processed")
 
     args = parser.parse_args()
 
@@ -36,7 +36,7 @@ if "__main__" == __name__:
     meta_df = raw_meta_df[raw_meta_df.included_in_public_release].copy()
 
     # %%
-    for split in ["train", "val", "test"]:
+    for split in ["test"]:
         split_output_dir = os.path.join(output_dir, split)
         os.makedirs(split_output_dir)
 
@@ -73,6 +73,10 @@ if "__main__" == __name__:
                 f"scene_{row.camera_name}_geometry_hdf5",
                 f"frame.{row.frame_id:04d}.render_entity_id.hdf5",
             )
+            if not os.path.exists(os.path.join(dataset_dir, rgb_path)):
+                print("We don't have the ", os.path.join(dataset_dir, rgb_path))
+            if not os.path.exists(os.path.join(dataset_dir, dist_path)):
+                print("We don't have the ", os.path.join(dataset_dir, dist_path))
             assert os.path.exists(os.path.join(dataset_dir, rgb_path))
             assert os.path.exists(os.path.join(dataset_dir, dist_path))
 

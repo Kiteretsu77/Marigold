@@ -89,7 +89,7 @@ class MarigoldTrainer:
         self.model.encode_empty_text()
         self.empty_text_embed = self.model.empty_text_embed.detach().clone().to(device)
 
-        self.model.unet.enable_xformers_memory_efficient_attention()
+        # self.model.unet.enable_xformers_memory_efficient_attention()
 
         # Trainability
         self.model.vae.requires_grad_(False)
@@ -112,14 +112,9 @@ class MarigoldTrainer:
         self.loss = get_loss(loss_name=self.cfg.loss.name, **self.cfg.loss.kwargs)
 
         # Training noise scheduler
-        self.training_noise_scheduler: DDPMScheduler = DDPMScheduler.from_pretrained(
-            os.path.join(
-                base_ckpt_dir,
-                cfg.trainer.training_noise_scheduler.pretrained_path,
-                "scheduler",
-            )
-        )
+        self.training_noise_scheduler: DDPMScheduler = DDPMScheduler.from_pretrained(base_ckpt_dir, subfolder = "scheduler")
         self.prediction_type = self.training_noise_scheduler.config.prediction_type
+        print("self.prediction_type is ", self.prediction_type)
         assert (
             self.prediction_type == self.model.scheduler.config.prediction_type
         ), "Different prediction types"
@@ -365,18 +360,17 @@ class MarigoldTrainer:
                     self._train_step_callback()
 
                     # End of training
-                    if self.max_iter > 0 and self.effective_iter >= self.max_iter:
+                    if self.effective_iter == 1 or self.effective_iter % 2000 == 0:       # Store per 1000 iter
                         self.save_checkpoint(
                             ckpt_name=self._get_backup_ckpt_name(),
                             save_train_state=False,
                         )
-                        logging.info("Training ended.")
-                        return
+                        logging.info("Store the checkpoint in the middle at ", self.effective_iter)
                     # Time's up
-                    elif t_end is not None and datetime.now() >= t_end:
-                        self.save_checkpoint(ckpt_name="latest", save_train_state=True)
-                        logging.info("Time is up, training paused.")
-                        return
+                    # elif t_end is not None and datetime.now() >= t_end:
+                    #     self.save_checkpoint(ckpt_name="latest", save_train_state=True)
+                    #     logging.info("Time is up, training paused.")
+                    #     return
 
                     torch.cuda.empty_cache()
                     # <<< Effective batch end <<<

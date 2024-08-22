@@ -98,9 +98,18 @@ class BaseDepthDataset(Dataset):
 
         # Load filenames
         with open(self.filename_ls_path, "r") as f:
-            self.filenames = [
+            all_files_check = [
                 s.split() for s in f.readlines()
             ]  # [['rgb.png', 'depth.tif'], [], ...]
+        print("Raw Dataset of ", dataset_dir, " is ", len(all_files_check))
+
+        # Sanity Check
+        self.filenames = []
+        for file_paths in all_files_check:
+            rgb_sub_path, depth_sub_path = file_paths[:2]
+            if os.path.exists(os.path.join(dataset_dir, rgb_sub_path)) and os.path.exists(os.path.join(dataset_dir, depth_sub_path)):
+                self.filenames.append(file_paths)
+        print("Total valid dataset we obtain is ", len(self.filenames))
 
         # Tar dataset
         self.tar_obj = None

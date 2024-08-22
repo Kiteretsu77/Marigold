@@ -1,0 +1,5 @@
+# Data process
+python script/dataset_preprocess/hypersim/preprocess_hypersim.py --split_csv metadata_images_split_scene_v1.csv
+
+# Train
+python train.py --config config/train_marigold.yaml
